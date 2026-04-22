@@ -1,0 +1,42 @@
+[project]
+name = "aiml-knowledge-agent"
+version = "0.1.0"
+description = "RAG-powered research assistant for AI/ML tooling with multi-agent orchestration."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "qdrant-client>=1.9",
+    "langchain>=0.2",
+    "langgraph>=0.1",
+    "sentence-transformers>=2.7",
+    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["aiml_knowledge_agent*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
