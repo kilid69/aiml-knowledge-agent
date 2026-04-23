@@ -24,5 +24,6 @@ class Settings(BaseSettings):
     lm_studio_chat_model: str | None = None
     lm_studio_embed_model: str | None = None
 
+
 # Instantiating Settings() reads env vars + .env once. Import elsewhere.
 settings = Settings()
