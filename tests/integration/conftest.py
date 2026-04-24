@@ -24,9 +24,21 @@ from aiml_knowledge_agent.models.llm_client import LMStudioClient
 
 @lru_cache(maxsize=1)
 def _lm_studio_reachable() -> bool:
+    """Return True iff LM Studio is up AND both configured models are loaded.
+    
+    Uses LM Studio's native REST API (/api/v0/models) rather than the
+    OpenAI-compatible /v1/models, because the OpenAI endpoint lists every
+    *downloaded* model — loaded or not. The native endpoint exposes a
+    'state' field we can filter on.
+    """
     try:
-        r = httpx.get(f"{settings.lm_studio_url}/models", timeout=1.0)
-        return r.status_code == 200
+        base = settings.lm_studio_url.removesuffix("/v1").rstrip("/")
+        r = httpx.get(f"{base}/api/v0/models", timeout=1.0)
+        if r.status_code != 200:
+            return False
+        loaded_ids = {m["id"] for m in r.json().get("data", [])}
+        required = {settings.lm_studio_chat_model, settings.lm_studio_embed_model}
+        return required.issubset(loaded_ids)
     except Exception:
         return False
 
@@ -47,9 +59,14 @@ def _qdrant_reachable() -> bool:
 def require_lm_studio() -> None:
     """Skip every integration test with a clear reason when LM Studio is down."""
     if not _lm_studio_reachable():
-        pytest.skip(f"LM Studio not reachable at {settings.lm_studio_url}")
+        pytest.skip(
+            f"LM Studio not reachable, or models not loaded: "
+            f"need chat={settings.lm_studio_chat_model!r}, "
+            f"embed={settings.lm_studio_embed_model!r}"
+        )
 
-
+# The autouse=true on both lm_studio and qdrant cause the qdrant to skip with require_lm_studio skip hint.
+# But the upside is that it doesn't need a pytestmark on each test module or input param on each test func.
 @pytest.fixture(autouse=True)
 def require_qdrant() -> None:
     """Skip every integration test with a clear reason when Qdrant is down."""
