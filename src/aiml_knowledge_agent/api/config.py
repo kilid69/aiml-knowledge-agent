@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     lm_studio_url: str = "http://localhost:1234/v1"
     lm_studio_chat_model: str | None = None
     lm_studio_embed_model: str | None = None
+    embedding_dim: int = 1024
 
 
 # Instantiating Settings() reads env vars + .env once. Import elsewhere.
