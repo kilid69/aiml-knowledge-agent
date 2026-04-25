@@ -48,3 +48,6 @@ mlflow.db
 .DS_Store
 Thumbs.db
 *.swp
+
+# Personal notes (not part of the project)
+docs/
