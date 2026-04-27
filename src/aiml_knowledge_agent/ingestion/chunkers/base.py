@@ -25,6 +25,7 @@ class Chunk:
     text: str
     metadata: dict[str, Any] = field(default_factory=dict) # docs/
     chunk_index: int = 0
+    vector: list[float] | None = None
 
 
 class BaseChunker(ABC):
