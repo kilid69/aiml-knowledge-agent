@@ -1,14 +1,48 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
-import httpx
+
 from aiml_knowledge_agent.api.config import settings
+from aiml_knowledge_agent.api.routes import ingest as ingest_route
+from aiml_knowledge_agent.ingestion.chunkers.simple import SimpleChunker
+from aiml_knowledge_agent.ingestion.embedder import Embedder
+from aiml_knowledge_agent.ingestion.pipeline import IngestionPipeline
+from aiml_knowledge_agent.models.llm_client import LMStudioClient
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """Build long-lived collaborators on startup, tear them down on shutdown.
+
+    Everything before `yield` runs ONCE when the app starts. Everything
+    after runs when it stops. The pipeline + its TCP connection pool
+    live for the whole process — not per request.
+    """
+
+    lm_client = LMStudioClient()
+    chunker   = SimpleChunker()
+    embedder  = Embedder(client=lm_client)
+    app.state.pipeline  = IngestionPipeline(chunker=chunker, embedder=embedder)
+    app.state.lm_client = lm_client   # keep a handle so we can close it below
+
+    yield 
+
+    await app.state.lm_client.aclose()
+
 
 app = FastAPI(
     title="AI/ML Knowledge Agent",
     description="RAG-powered research assistant for AI/ML tooling.",
     version="0.1.0",
+    lifespan=lifespan,
 )
+
+# Mount the /ingest route under the app.
+app.include_router(ingest_route.router)
 
 
 class HealthResponse(BaseModel):

@@ -9,9 +9,6 @@ Uses the `isolated_collection` fixture so the production collection is
 never touched.
 """
 
-import pytest
-
-from aiml_knowledge_agent.api.config import settings
 from aiml_knowledge_agent.ingestion.chunkers.simple import SimpleChunker
 from aiml_knowledge_agent.ingestion.embedder import Embedder
 from aiml_knowledge_agent.ingestion.pipeline import IngestionPipeline
@@ -94,15 +91,7 @@ async def test_reingest_replaces_prior_chunks(
     isolated_collection: str,
 ) -> None:
    """Ingesting the same source twice doesn't accumulate duplicates.
-
-   Steps:
-   1. Build the pipeline.
-   2. Ingest SAMPLE_DOC with source="https://example.com/doc".
-      Record the count via Qdrant client.count().
-   3. Ingest a *different* text with the SAME source. The pipeline's
-      delete_by_source step should clear the previous chunks first.
-   4. Assert the final count equals the chunk count from the second
-      ingest only — not the sum of both.
+   Inserting SAME source clear the previous chunk.
    """
 
    simple_chunker = SimpleChunker()
