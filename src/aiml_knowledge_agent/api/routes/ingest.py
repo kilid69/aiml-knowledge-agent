@@ -75,7 +75,7 @@ async def ingest(
         metadata.update(framework=body.framework)
 
     if body.title:
-        metadata.update(section_title=body.title)
+        metadata.update(title=body.title)
     
     chunk_count = await pipeline.ingest_document(body.text, metadata=metadata)
     

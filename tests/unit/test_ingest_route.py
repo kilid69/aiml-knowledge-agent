@@ -143,7 +143,7 @@ def test_post_ingest_passes_optional_fields_when_provided(
     
     _, metadata = fake_pipeline.calls[0]
 
-    assert metadata["section_title"] == "State machine basics"
+    assert metadata["title"] == "State machine basics"
     assert metadata["framework"] == "langgraph"
     
 
@@ -160,7 +160,7 @@ def test_post_ingest_omits_optional_fields_when_not_provided(
 
     _, metadata = fake_pipeline.calls[0]
 
-    assert "section_title" not in metadata
+    assert "title" not in metadata
     assert "framework" not in metadata
 
 
